@@ -12,6 +12,40 @@ from function.tools import *
 from function.view import *
 
 
+def buscar_auto_recursivo(autos, busqueda, indice=0, encontrados=None):
+    """Busca autos de forma recursiva por marca o modelo.
+
+    Implementación recursiva para cumplir con los requisitos del proyecto.
+
+    Args:
+        autos (list[dict]): Lista de autos donde buscar.
+        busqueda (str): Texto a buscar en Marca o Modelo.
+        indice (int): Índice actual en la lista (para recursión).
+        encontrados (list[dict]): Lista acumulativa de resultados.
+
+    Returns:
+        list[dict]: Lista de autos que coinciden con la búsqueda.
+    """
+    if encontrados is None:
+        encontrados = []
+
+    # Caso base: se recorrió toda la lista
+    if indice >= len(autos):
+        return encontrados
+
+    # Procesar el elemento actual
+    auto_actual = autos[indice]
+    busqueda_norm = normalizar(busqueda)
+    marca_norm = normalizar(auto_actual.get("Marca", ""))
+    modelo_norm = normalizar(auto_actual.get("Modelo", ""))
+
+    if busqueda_norm in marca_norm or busqueda_norm in modelo_norm:
+        encontrados.append(auto_actual)
+
+    # Llamada recursiva para el siguiente elemento
+    return buscar_auto_recursivo(autos, busqueda, indice + 1, encontrados)
+
+
 def _leer_entero_no_negativo(respuesta: str):
     """
     Lee desde input y valida:
@@ -29,6 +63,8 @@ def _leer_entero_no_negativo(respuesta: str):
 def buscar_auto(autos, busqueda):
     """Busca autos por marca o modelo.
 
+    Esta función utiliza la implementación recursiva internamente.
+
     Args:
         autos (list[dict]): Lista de autos donde buscar.
         busqueda (str): Texto a buscar en Marca o Modelo (no case-sensitive, sin acentos).
@@ -36,11 +72,8 @@ def buscar_auto(autos, busqueda):
     Returns:
         None (imprime resultados por consola).
     """
-    busqueda_norm = normalizar(busqueda)
-    encontrados = [
-        a for a in autos
-        if busqueda_norm in normalizar(a["Marca"]) or busqueda_norm in normalizar(a["Modelo"])
-    ]
+    # Usar búsqueda recursiva
+    encontrados = buscar_auto_recursivo(autos, busqueda)
 
     if encontrados:
         print(f"\nSe encontraron {len(encontrados)} auto(s):")

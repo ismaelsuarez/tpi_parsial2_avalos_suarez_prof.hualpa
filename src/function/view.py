@@ -11,8 +11,36 @@ from function.tools import normalizar
 import unicodedata  # (opcional: no se usa aquí directamente)
 
 
+def mostrar_autos_recursivo(lista_autos, indice=0):
+    """Muestra los autos de forma recursiva.
+
+    Implementación recursiva para cumplir con los requisitos del proyecto.
+
+    Args:
+        lista_autos (list[dict]): Lista de autos a mostrar.
+        indice (int): Índice actual en la lista (para recursión).
+    """
+    # Caso base: se recorrió toda la lista
+    if indice >= len(lista_autos):
+        return
+
+    # Procesar el elemento actual
+    a = lista_autos[indice]
+    print(
+        f"{a['Marca']} {a['Modelo']} | "
+        f"Año: {a['Año']} | "
+        f"Combustible: {a['TipoCombustible']} | "
+        f"Transmisión: {a['Transmisión']}"
+    )
+
+    # Llamada recursiva para el siguiente elemento
+    mostrar_autos_recursivo(lista_autos, indice + 1)
+
+
 def mostrar_autos(lista_autos):
     """Imprime una lista de autos con sus datos principales.
+
+    Esta función utiliza la implementación recursiva internamente.
 
     Cada elemento de `lista_autos` debe ser un diccionario con las claves:
     'Marca', 'Modelo', 'Año', 'TipoCombustible', 'Transmisión'.
@@ -23,13 +51,11 @@ def mostrar_autos(lista_autos):
     Returns:
         None
     """
-    for a in lista_autos:
-        print(
-            f"{a['Marca']} {a['Modelo']} | "
-            f"Año: {a['Año']} | "
-            f"Combustible: {a['TipoCombustible']} | "
-            f"Transmisión: {a['Transmisión']}"
-        )
+    if not lista_autos:
+        return
+
+    # Usar función recursiva
+    mostrar_autos_recursivo(lista_autos)
 
 
 def pedir_rango(nombre_campo):
