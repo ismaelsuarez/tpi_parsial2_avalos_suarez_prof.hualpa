@@ -77,7 +77,14 @@ def buscar_auto(autos, busqueda):
 
     if encontrados:
         print(f"\nSe encontraron {len(encontrados)} auto(s):")
-        mostrar_autos(encontrados)
+        
+        for i, auto in enumerate(encontrados, 1):
+            print(
+                f"{i}. {auto['Marca']} {auto['Modelo']} | "
+                f"Año: {auto['Año']} | "
+                f"Combustible: {auto['TipoCombustible']} | "
+                f"Transmisión: {auto['Transmisión']}"
+            )
     else:
         print("No se encontró ningún auto con esa marca o modelo.")
 

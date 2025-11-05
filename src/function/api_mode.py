@@ -4,11 +4,47 @@ Este módulo proporciona funciones para interactuar con la API de autos
 usando directamente los campos del CSV: Marca, Modelo, Año, TipoCombustible, Transmisión.
 """
 
-from function.tools import normalizar
+import os
+from pathlib import Path
+from function.tools import normalizar, escribir_csv
 from function.view import mostrar_autos, ordenar_autos
 from function.statistics import mostrar_estadisticas
 from function.shearch import buscar_auto, filtrar_combustible, filtrar_año, filtrar_transmision
 from function import api_client
+
+
+def _sincronizar_api_con_local():
+    """Sincroniza la estructura jerárquica local con los datos de la API.
+    
+    Obtiene todos los autos desde la API y los escribe en el archivo CSV local,
+    lo que activa automáticamente la sincronización de la estructura jerárquica.
+    """
+    try:
+        # Obtener todos los autos desde la API
+        autos_api = obtener_autos_api()
+        
+        if not autos_api:
+            # Si no hay datos en la API, no hay nada que sincronizar
+            return
+        
+        # Obtener la ruta del archivo CSV local
+        # Buscar la ruta del proyecto desde el módulo actual
+        current_file = Path(__file__).resolve()
+        project_root = current_file.parent.parent.parent
+        db_path = project_root / "src" / "db" / "autos.csv"
+        
+        # Si el archivo no existe, crearlo
+        if not db_path.exists():
+            db_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Escribir los datos de la API en el archivo local
+        # Esto activará automáticamente la sincronización jerárquica
+        escribir_csv(str(db_path), autos_api)
+        
+    except Exception as e:
+        # Si hay error, continuar sin afectar la operación de API
+        # No mostrar error para no confundir al usuario
+        pass
 
 
 def obtener_autos_api(q=None, tipo_combustible=None, sort_by=None, desc=False):
@@ -38,9 +74,7 @@ def obtener_autos_api(q=None, tipo_combustible=None, sort_by=None, desc=False):
         
         # Verificar si la lista está vacía
         if len(items) == 0:
-            print(f"\n⚠️ La API no tiene datos disponibles.")
-            print(f"   La API en http://149.50.150.15:8010 está conectada pero no contiene autos.")
-            print(f"   Necesitás cargar datos primero usando la opción 'Agregar un auto' del menú.")
+            print(f"\n⚠️ No tenemos ese auto en nuestra base de datos.")
             return []
         
         return items
@@ -174,6 +208,9 @@ def agregar_auto_api():
             transmision=transmision,
         )
         print(f"Auto '{marca} {modelo}' creado correctamente en el servidor.")
+        
+        # Sincronizar estructura jerárquica local después de crear en API
+        _sincronizar_api_con_local()
     except Exception as e:
         print(f"Error al crear el auto: {e}")
 
@@ -259,6 +296,9 @@ def editar_auto_api():
         try:
             api_client.actualizar_auto_parcial(auto_id, cambios)
             print(f"Datos actualizados para {auto.get('Marca', '')} {auto.get('Modelo', '')}.")
+            
+            # Sincronizar estructura jerárquica local después de actualizar en API
+            _sincronizar_api_con_local()
         except Exception as e:
             print(f"Error al actualizar: {e}")
 
@@ -267,30 +307,8 @@ def editar_auto_api():
 
 
 def borrar_auto_api() -> None:
-    """Borra un auto usando la API por ID o por marca/modelo."""
+    """Borra un auto usando la API por marca/modelo."""
     print("\n--- Borrar auto (API) ---")
-    modo = input("¿Buscar por (1) marca/modelo o (2) id? : ").strip() or "1"
-
-    if modo == "2":
-        try:
-            cid = int(input("ID: ").strip())
-        except ValueError:
-            print("ID inválido.")
-            return
-
-        confirma = input(f"¿Confirmás borrar id={cid}? (s/n): ").strip().lower() == "s"
-        if not confirma:
-            print("Cancelado.")
-            return
-
-        try:
-            api_client.eliminar_auto(cid)
-            print(f"Borrado id={cid} en el servidor.")
-        except Exception as e:
-            print(f"Error al borrar: {e}")
-        return
-
-    # Borrado por marca/modelo
     busqueda = input("Ingresá la marca o modelo (o parte): ").strip()
     if not busqueda:
         print("Búsqueda vacía, cancelado.")
@@ -301,10 +319,19 @@ def borrar_auto_api() -> None:
         print(f"No se encontró ningún auto que contenga '{busqueda}'.")
         return
 
-    mostrar_autos(autos)
+    # Mostrar autos con ID para que el usuario pueda verlo
+    print(f"\nSe encontraron {len(autos)} auto(s):")
+    for i, a in enumerate(autos, 1):
+        auto_id = a.get("id", "N/A")
+        print(
+            f"{i}. [ID: {auto_id}] {a.get('Marca', '')} {a.get('Modelo', '')} | "
+            f"Año: {a.get('Año', '')} | "
+            f"Combustible: {a.get('TipoCombustible', '')} | "
+            f"Transmisión: {a.get('Transmisión', '')}"
+        )
 
     try:
-        idx = int(input("Elegí el número del auto a borrar (1..n): ").strip()) - 1
+        idx = int(input("\nElegí el número del auto a borrar (1..n): ").strip()) - 1
         if idx < 0 or idx >= len(autos):
             print("Número inválido.")
             return
@@ -334,5 +361,8 @@ def borrar_auto_api() -> None:
     try:
         api_client.eliminar_auto(auto_id)
         print(f"'{elegido.get('Marca', '')} {elegido.get('Modelo', '')}' borrado correctamente (API).")
+        
+        # Sincronizar estructura jerárquica local después de borrar en API
+        _sincronizar_api_con_local()
     except Exception as e:
         print(f"Error al borrar: {e}")

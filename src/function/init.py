@@ -110,6 +110,7 @@ def init_db(project_root):
 
     Esta función es un envoltorio de `gestionar_db`, fijando la ruta esperada
     (`RUTA_CORRECTA_DB`) y devolviendo la ruta final lista para trabajar.
+    También inicializa la estructura jerárquica de subgrupos si existe el módulo.
 
     Args:
         project_root (str): Ruta absoluta a la raíz del proyecto.
@@ -122,4 +123,26 @@ def init_db(project_root):
         print("****************************************************")
         print("No se pudo preparar la base de datos. Saliendo.")
         return None
+
+    # Inicializar estructura jerárquica si el archivo existe
+    if db_path and os.path.exists(db_path):
+        try:
+            from function.jerarquia import inicializar_estructura_jerarquica, sincronizar_estructura_jerarquica
+            from function.tools import leer_csv
+
+            # Inicializar carpetas
+            inicializar_estructura_jerarquica(db_path)
+
+            # Sincronizar datos existentes
+            autos = leer_csv(db_path)
+            if autos:
+                sincronizar_estructura_jerarquica(autos, db_path)
+                print("✅ Estructura jerárquica inicializada")
+        except ImportError:
+            # Si el módulo jerarquia no está disponible, continuar sin estructura jerárquica
+            pass
+        except Exception as e:
+            # Si hay algún error, continuar sin estructura jerárquica
+            print(f"⚠️  No se pudo inicializar estructura jerárquica: {e}")
+
     return db_path

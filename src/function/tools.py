@@ -97,6 +97,9 @@ def escribir_csv(ruta_csv: str, autos: list[dict]) -> None:
     El archivo se crea/sobrescribe usando UTF-8 con BOM y las columnas:
     'Marca', 'Modelo', 'Año', 'TipoCombustible', 'Transmisión'.
 
+    Además, sincroniza la estructura jerárquica de subgrupos organizando
+    los datos en subcarpetas por marca, combustible y transmisión.
+
     Args:
         ruta_csv (str): Ruta destino del archivo CSV.
         autos (list[dict]): Lista de autos a persistir.
@@ -116,6 +119,14 @@ def escribir_csv(ruta_csv: str, autos: list[dict]) -> None:
                 "TipoCombustible": str(a["TipoCombustible"]),
                 "Transmisión": str(a["Transmisión"]),
             })
+
+    # Sincronizar estructura jerárquica después de escribir el archivo central
+    try:
+        from function.jerarquia import sincronizar_estructura_jerarquica
+        sincronizar_estructura_jerarquica(autos, ruta_csv)
+    except ImportError:
+        # Si el módulo jerarquia no está disponible, continuar sin sincronización
+        pass
 
 
 def limpiar_consola():
