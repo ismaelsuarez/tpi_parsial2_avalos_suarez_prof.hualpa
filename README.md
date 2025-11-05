@@ -1,4 +1,4 @@
-# TPI Programación 1 — Gestión de Autos (Python)
+﻿# TPI Programación 1 — Gestión de Autos (Python)
 
 Aplicación de **consola** para consultar y administrar datos de autos desde un **CSV local** o una **API REST** remota. Permite **búsquedas**, **filtros**, **ordenamientos**, **estadísticas** y **CRUD** básico.
 
@@ -272,7 +272,4 @@ README.md
 - **Carrera**: Tecnicatura Universitaria en Programación
 - **Año**: 2025
 - **Integrantes**: *Avalos, Pablo* — *Suárez, Ismael*
-- **Video Presentación**: 
-
-#   t p i _ p a r s i a l 2 _ a v a l o s _ s u a r e z _ p r o f . h u a l p a  
- 
+- **Video Presentación**: https://www.youtube.com/watch?v=Yjla5Ayn3vM
